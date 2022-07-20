@@ -1,0 +1,181 @@
+data:
+  common:
+    kwargs:
+      classes:
+      - drawer
+      data_dir: artifacts/dataset/shape2motion_v3/data/sample
+      is_imnet_res64_sampling: false
+      param_filename: motion_param_sample_wise_normalize.npz
+      points_values_filename: points_values_whole_shape_sample_wise_normalize_16.npz
+      points_values_subsample_num: 4096
+      surface_points_filename: surface_points_whole_shape_sample_wise_normalize.npz
+      surface_points_subsample_num: 4096
+  test:
+    kwargs:
+      list_path: artifacts/dataset/shape2motion_v3/list/test.lst
+  train:
+    kwargs:
+      list_path: artifacts/dataset/shape2motion_v3/list/train.lst
+  val:
+    kwargs:
+      list_path: artifacts/dataset/shape2motion_v3/list/val.lst
+model:
+  class: model.imnet.imnet.IMNetAutoEncoder
+  kwargs:
+    bound_amount_to_pi_and_one: true
+    canonical_direction_decode_type: euler_angle
+    canonical_direction_init_directions:
+    - z0
+    - z180
+    - y-90
+    - x90
+    - x90
+    - x90
+    - x90
+    decoder_depth: 4
+    decoder_hidden_size: 205
+    decoder_last_act_type: none
+    decoder_leaky_relu: true
+    decoder_type: occnet
+    discriminator_decoder_kwargs:
+      special_weight_init: true
+    discriminator_decoder_type: model.paramnet.TreeGANParamNetSN
+    discriminator_encoder_kwargs:
+      act_type: selu
+      special_weight_init: true
+    discriminator_encoder_type: model.pointnet.TreeGANPointNetSNELU
+    encoder_type: pointnet
+    expand_rotation_for_euler_angle_sample_num: 8
+    generator_kwargs:
+      batch_norm_type: layer_norm
+      is_input_point_with_constant_latent_vector: true
+      is_simple_constant_mode: false
+      shape_quantize_num: 1
+      shape_template_latent_dim: 64
+    is_adversarial: true
+    is_expand_rotation_for_euler_angle: false
+    is_expand_rotation_for_euler_angle_width_angle: 20
+    is_input_motion_latent_to_shape_decoder: false
+    is_skip_direction_normalization_in_canonical_direction_from_generator: false
+    is_split_latent_dim_for_motion: true
+    model_optimizer_group_names:
+      discriminator:
+      - net_D
+      - D_encoder
+      generator:
+      - encoder
+      - generator
+      - paramnet
+    motion_decoding_type: one_joint_type_per_primitive_rot_pm_num_specified
+    occnet_decoder_type: model.imnet.nsd_decoder.DecoderQuantizedInputAllSirenMultiply
+    param_type: only_amount_as_matrix_loc_offset_canonical_motion_euler_angle
+    paramnet_decoder_type: model.paramnet.ParamNetV2QuantizedCanonicalMotionGenericNorm
+    paramnet_hidden_size: 205
+    paramnet_kwargs:
+      batch_norm_type: layer_norm
+      batch_norm_types_per_const:
+        canonical_direction: instance_norm
+      init_methods:
+        canonical_direction: zero
+      is_simple_constant_mode: false
+      motion_template_latent_dim: 64
+      out_conv_scales:
+        rotation_amount: 2
+        translation_amount: 2
+    paramnet_out_act: null
+    paramnet_version: v2
+    primitive_num: 8
+    rotation_decode_type: euler_angle
+    rotation_primitive_num: 3
+    use_canonical_motion_from_paramnet_and_shape_from_generator: true
+    use_diff_decoder: true
+trainer:
+  kwargs:
+    D_loss_weight: 3.25
+    G_loss_weight: 0.65
+    anchor_position_chain_assumption_loss_weight: 100
+    anchor_position_loss_weight: 100
+    anchor_position_near_gt_shape_loss_weight: 100
+    disable_canonical_location_for_translation: true
+    disable_gan_training: false
+    disable_induction_by_moving: false
+    disable_moved_overlap_regularizer_loss: false
+    gan_type: wgangp
+    gp_lambda: 1
+    gradient_penalty_type: wgangp
+    is_canonical_location_as_anchor_point: true
+    is_check_gradient_scale: false
+    is_constant_motion_range: true
+    is_correct_continuous_rotation: true
+    is_freeze_recon_loss_during_paramnet_training: false
+    is_move_points: false
+    is_occupancy_reduction_logsumexp_decay: false
+    loss_optimizer_pairs:
+      total_D_loss:
+        discriminator:
+          every: 1
+      total_G_loss:
+        generator:
+          every: 1
+    minimize_raw_canonical_location_to_offset_loss_weight: 10
+    model_input_type: surface_points
+    motion_amount_inverse_std_loss_aggregation_type: max
+    motion_amount_inverse_std_loss_weight: 0.01
+    occupancy_loss_weight: 0.01
+    occupancy_reduction_loss_type: occnet
+    occupancy_reduction_type: logsumexp
+    occupancy_reduction_type_for_discriminator: logsumexp_sigmoid
+    overlap_regularizer_loss_weight: 8.3
+    overlap_regularizer_type: nsd_style
+    overlap_threshold: 0.8
+    pretrained_feature_canonical_loss_weight: 10
+    recon_canonical_shape_loss_weight: 0.001
+    rotation_anchor_point_similarity_loss_type: gaussian_prob
+    rotation_anchor_point_similarity_loss_weight: 0.1
+    sample_transform_param_rotation_max: 1.57
+    sample_transform_param_translation_max: 0.4
+    skip_learn_generator_with_recon_shape: true
+    soft_volume_preserving_loss_type: default
+    soft_volume_preserving_loss_weight: 1000
+    train_implicit: true
+    use_adaptive_max_motion_range_sampling: false
+    use_anchor_position_chain_assumption_loss: true
+    use_anchor_position_near_gt_shape_loss: true
+    use_anchor_position_near_gt_shape_loss_union_to_static_primitive: true
+    use_gradient_penalty: true
+    use_learn_generator_with_randomly_moved_shape: true
+    use_minimize_raw_canonical_location_to_offset_loss: true
+    use_motion_amount_inverse_std_loss: true
+    use_moved_overlap_regularizer_loss: false
+    use_overlap_regularizer: false
+    use_raw_anchor_position_near_gt_shape_loss: true
+    use_recon_canonical_shape_loss: true
+    use_rotation_anchor_point_similarity_loss: true
+    use_self_supervised_canonical_learning: true
+    use_self_supervised_motion_learning: false
+    use_soft_volume_preserving_loss: true
+    use_unsupervised_part_iou_for_eval: true
+training:
+  batch_size: 18
+  checkpoint:
+    every: 1000
+  eval:
+    batch_size: 12
+    every: 1000
+  every: 5
+  optimizer_groups:
+    discriminator:
+      learning_rate: 0.0001
+    generator:
+      learning_rate: 0.0001
+  outdir: artifacts/out/3d/{}
+  terminate_epoch: -1
+  terminate_iters: -1
+  visualize:
+    batch_size: 5
+    every: 500
+    use_eval_mode: true
+version: v3
+wandb:
+  group: 3d
+  job_type: hps
